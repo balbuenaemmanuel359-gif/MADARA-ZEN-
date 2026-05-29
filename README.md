@@ -1,6 +1,6 @@
 -- MADARA ZEN - MUSCLE LEGEND SCRIPT v3 [WORKING]
 -- Ultra Fast Auto Strength | Auto Farm | Auto Rebirth
--- Enhanced with Tabbed Interface + RUN Function
+-- Enhanced with Tabbed Interface + RUN Function + NEW FUNCTIONS
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -15,6 +15,9 @@ local FARM_ACTIVE = false
 local REBIRTH_ACTIVE = false
 local GOD_MODE_ACTIVE = false
 local RUN_ACTIVE = false
+local SPEED_ACTIVE = false
+local AUTOCLICKER_ACTIVE = false
+local INFINITE_STAMINA_ACTIVE = false
 
 -- ITEM LISTS FOR FARMING
 local STRENGTH_ITEMS = {
@@ -22,42 +25,67 @@ local STRENGTH_ITEMS = {
     "Energy Shake", "Protein Bar", "TOUGH Bar", "Ultra Shake", "Muscle Juice"
 }
 
--- ========== RUN FUNCTION ==========
-local function RunScript()
-    -- Execute all active functions at once
-    while RUN_ACTIVE do
-        pcall(function()
-            local activeCount = 0
-            
-            if STRENGTH_ACTIVE then
-                activeCount = activeCount + 1
-                ActivateStrength()
-            end
-            
-            if FARM_ACTIVE then
-                activeCount = activeCount + 1
-                AutoFarm()
-            end
-            
-            if REBIRTH_ACTIVE then
-                activeCount = activeCount + 1
-                AutoRebirth()
-            end
-            
-            if GOD_MODE_ACTIVE then
-                activeCount = activeCount + 1
-                GodMode()
-            end
-            
-            if activeCount == 0 then
-                print("⚠️ No features enabled! Activate features first.")
-            end
-        end)
-        task.wait(0.1)
-    end
+-- ========== SPEED FUNCTION ==========
+local function SpeedBoost()
+    pcall(function()
+        if not SPEED_ACTIVE then return end
+        
+        local humanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            humanoidRootPart.Velocity = humanoidRootPart.Velocity + Vector3.new(0.5, 0, 0.5)
+        end
+    end)
 end
 
--- ========== AUTO STRENGTH ==========
+-- ========== AUTO CLICKER FUNCTION ==========
+local function AutoClicker()
+    pcall(function()
+        if not AUTOCLICKER_ACTIVE then return end
+        
+        local mouse = LocalPlayer:GetMouse()
+        local targetItem = nil
+        
+        -- Find nearest item to click
+        for _, item in ipairs(game.Workspace:GetChildren()) do
+            if item:IsA("Model") and table.find(STRENGTH_ITEMS, item.Name) then
+                if targetItem == nil then
+                    targetItem = item
+                else
+                    local dist1 = (item.PrimaryPart.Position - HumanoidRootPart.Position).Magnitude
+                    local dist2 = (targetItem.PrimaryPart.Position - HumanoidRootPart.Position).Magnitude
+                    if dist1 < dist2 then
+                        targetItem = item
+                    end
+                end
+            end
+        end
+        
+        -- Click on the item
+        if targetItem then
+            mouse.Target = targetItem
+            mouse:Fire()
+        end
+    end)
+end
+
+-- ========== INFINITE STAMINA FUNCTION ==========
+local function InfiniteStamina()
+    pcall(function()
+        if not INFINITE_STAMINA_ACTIVE then return end
+        
+        -- Look for humanoid and restore stamina attribute
+        if Humanoid:FindFirstChild("Stamina") then
+            Humanoid.Stamina.Value = 100
+        end
+        
+        -- Alternative: disable stamina drain by modifying character properties
+        if Character:FindFirstChild("Stats") then
+            Character.Stats.Stamina.Value = 999999
+        end
+    end)
+end
+
+-- ========== AUTO STRENGTH EQUIP ==========
 local function ActivateStrength()
     pcall(function()
         for _, itemName in ipairs(STRENGTH_ITEMS) do
@@ -143,6 +171,56 @@ local function GodMode()
     end)
 end
 
+-- ========== RUN FUNCTION ==========
+local function RunScript()
+    -- Execute all active functions at once
+    while RUN_ACTIVE do
+        pcall(function()
+            local activeCount = 0
+            
+            if STRENGTH_ACTIVE then
+                activeCount = activeCount + 1
+                ActivateStrength()
+            end
+            
+            if FARM_ACTIVE then
+                activeCount = activeCount + 1
+                AutoFarm()
+            end
+            
+            if REBIRTH_ACTIVE then
+                activeCount = activeCount + 1
+                AutoRebirth()
+            end
+            
+            if GOD_MODE_ACTIVE then
+                activeCount = activeCount + 1
+                GodMode()
+            end
+            
+            if SPEED_ACTIVE then
+                activeCount = activeCount + 1
+                SpeedBoost()
+            end
+            
+            if AUTOCLICKER_ACTIVE then
+                activeCount = activeCount + 1
+                AutoClicker()
+            end
+            
+            if INFINITE_STAMINA_ACTIVE then
+                activeCount = activeCount + 1
+                InfiniteStamina()
+            end
+            
+            if activeCount == 0 then
+                print("⚠️ No features enabled! Activate features first.")
+            end
+        end)
+        task.wait(0.1)
+    end
+end
+
 -- ========== CREATE TABBED GUI ==========
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "MuscleHubGUI"
@@ -152,7 +230,7 @@ ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 -- Main container
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 280, 0, 450)
+MainFrame.Size = UDim2.new(0, 280, 0, 550)
 MainFrame.Position = UDim2.new(0, 10, 0, 10)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainFrame.BorderSizePixel = 0
@@ -183,7 +261,7 @@ TitleLabel.BackgroundTransparency = 1
 TitleLabel.TextColor3 = Color3.fromRGB(0, 255, 150)
 TitleLabel.TextScaled = true
 TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "🎮 MADARA ZEN v3"
+TitleLabel.Text = "🎮 MADARA ZEN v4"
 TitleLabel.Parent = HeaderFrame
 
 -- Tab buttons container
@@ -205,7 +283,7 @@ UIListLayout.Parent = TabButtonsFrame
 -- Content area
 local ContentFrame = Instance.new("Frame")
 ContentFrame.Name = "ContentFrame"
-ContentFrame.Size = UDim2.new(1, -20, 1, -145)
+ContentFrame.Size = UDim2.new(1, -20, 1, -195)
 ContentFrame.Position = UDim2.new(0, 10, 0, 95)
 ContentFrame.BackgroundTransparency = 1
 ContentFrame.BorderSizePixel = 0
@@ -214,8 +292,8 @@ ContentFrame.Parent = MainFrame
 -- Footer status display
 local FooterFrame = Instance.new("Frame")
 FooterFrame.Name = "FooterFrame"
-FooterFrame.Size = UDim2.new(1, 0, 0, 50)
-FooterFrame.Position = UDim2.new(0, 0, 1, -50)
+FooterFrame.Size = UDim2.new(1, 0, 0, 100)
+FooterFrame.Position = UDim2.new(0, 0, 1, -100)
 FooterFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 FooterFrame.BorderSizePixel = 0
 FooterFrame.Parent = MainFrame
@@ -230,7 +308,7 @@ StatusLabel.Size = UDim2.new(1, -10, 1, -10)
 StatusLabel.Position = UDim2.new(0, 5, 0, 5)
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.TextColor3 = Color3.fromRGB(0, 255, 100)
-StatusLabel.TextSize = 10
+StatusLabel.TextSize = 9
 StatusLabel.Font = Enum.Font.GothamMonospace
 StatusLabel.TextYAlignment = Enum.TextYAlignment.Top
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -307,6 +385,10 @@ CreateFeatureButton("♻️ AUTO REBIRTH", Color3.fromRGB(150, 50, 200), functio
     REBIRTH_ACTIVE = not REBIRTH_ACTIVE
 end, AutoTab)
 
+CreateFeatureButton("🚀 SPEED BOOST", Color3.fromRGB(100, 200, 255), function()
+    SPEED_ACTIVE = not SPEED_ACTIVE
+end, AutoTab)
+
 -- Tab 2: Combat
 local CombatTab = Instance.new("Frame")
 CombatTab.Name = "CombatTab"
@@ -329,21 +411,13 @@ CreateFeatureButton("👑 GOD MODE", Color3.fromRGB(255, 0, 0), function()
     end
 end, CombatTab)
 
-local ComingSoonLabel = Instance.new("TextLabel")
-ComingSoonLabel.Name = "ComingSoonLabel"
-ComingSoonLabel.Size = UDim2.new(1, -10, 0, 40)
-ComingSoonLabel.Position = UDim2.new(0, 5, 0, 60)
-ComingSoonLabel.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-ComingSoonLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-ComingSoonLabel.TextScaled = true
-ComingSoonLabel.Font = Enum.Font.GothamBold
-ComingSoonLabel.Text = "More features coming soon..."
-ComingSoonLabel.BorderSizePixel = 0
-ComingSoonLabel.Parent = CombatTab
+CreateFeatureButton("🖱️ AUTO CLICKER", Color3.fromRGB(255, 100, 100), function()
+    AUTOCLICKER_ACTIVE = not AUTOCLICKER_ACTIVE
+end, CombatTab)
 
-local UICornerComingSoon = Instance.new("UICorner")
-UICornerComingSoon.CornerRadius = UDim.new(0, 8)
-UICornerComingSoon.Parent = ComingSoonLabel
+CreateFeatureButton("⚡ INFINITE STAMINA", Color3.fromRGB(200, 150, 0), function()
+    INFINITE_STAMINA_ACTIVE = not INFINITE_STAMINA_ACTIVE
+end, CombatTab)
 
 -- Tab 3: Run/Execute
 local RunTab = Instance.new("Frame")
@@ -379,7 +453,7 @@ RunInfoLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
 RunInfoLabel.TextScaled = false
 RunInfoLabel.TextSize = 11
 RunInfoLabel.Font = Enum.Font.GothamMonospace
-RunInfoLabel.Text = "🔥 Enable features in\nAuto tab, then press\nRUN ALL to execute\nall active functions!"
+RunInfoLabel.Text = "🔥 Enable features in\nAuto/Combat tabs, then\npress RUN ALL to\nexecute all active!"
 RunInfoLabel.TextWrapped = true
 RunInfoLabel.BorderSizePixel = 0
 RunInfoLabel.Parent = RunTab
@@ -409,6 +483,9 @@ CreateFeatureButton("❌ DISABLE ALL", Color3.fromRGB(200, 50, 50), function()
     REBIRTH_ACTIVE = false
     GOD_MODE_ACTIVE = false
     RUN_ACTIVE = false
+    SPEED_ACTIVE = false
+    AUTOCLICKER_ACTIVE = false
+    INFINITE_STAMINA_ACTIVE = false
     print("⏹️ All features disabled!")
 end, SettingsTab)
 
@@ -421,7 +498,7 @@ InfoLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
 InfoLabel.TextScaled = false
 InfoLabel.TextSize = 11
 InfoLabel.Font = Enum.Font.GothamMonospace
-InfoLabel.Text = "v3.1 - RUN Edition\n✅ All features working\n⚡ Multi-execute ready"
+InfoLabel.Text = "v4.0 - Enhanced Edition\n✅ New features added\n⚡ Full multi-execute"
 InfoLabel.TextWrapped = true
 InfoLabel.BorderSizePixel = 0
 InfoLabel.Parent = SettingsTab
@@ -478,11 +555,16 @@ task.spawn(function()
         StatusLabel.Text = string.format(
             "⚡ Str: %s | 🌾 Farm: %s\n" ..
             "♻️ Rebirth: %s | 👑 God: %s\n" ..
-            "▶️ Run: %s | HP: %d/%d",
+            "🚀 Speed: %s | 🖱️ Click: %s\n" ..
+            "⚡ Stamina: %s | ▶️ Run: %s\n" ..
+            "HP: %d/%d",
             STRENGTH_ACTIVE and "✅" or "❌",
             FARM_ACTIVE and "✅" or "❌",
             REBIRTH_ACTIVE and "✅" or "❌",
             GOD_MODE_ACTIVE and "✅" or "❌",
+            SPEED_ACTIVE and "✅" or "❌",
+            AUTOCLICKER_ACTIVE and "✅" or "❌",
+            INFINITE_STAMINA_ACTIVE and "✅" or "❌",
             RUN_ACTIVE and "▶️ ON" or "⏹️ OFF",
             math.floor(Humanoid.Health),
             math.floor(Humanoid.MaxHealth)
@@ -511,6 +593,18 @@ task.spawn(function()
             if GOD_MODE_ACTIVE then
                 GodMode()
             end
+            
+            if SPEED_ACTIVE then
+                SpeedBoost()
+            end
+            
+            if AUTOCLICKER_ACTIVE then
+                AutoClicker()
+            end
+            
+            if INFINITE_STAMINA_ACTIVE then
+                InfiniteStamina()
+            end
         end)
         task.wait(0.1)
     end
@@ -528,20 +622,12 @@ LocalPlayer.CharacterAdded:Connect(function(newCharacter)
     end
 end)
 
--- ========== AUTO-START RUN MODE ==========
--- Uncomment below to auto-start RUN mode when script loads
--- task.wait(2)
--- STRENGTH_ACTIVE = true
--- FARM_ACTIVE = true
--- REBIRTH_ACTIVE = true
--- GOD_MODE_ACTIVE = true
--- RUN_ACTIVE = true
--- task.spawn(RunScript)
--- print("✅ AUTO-START: All features enabled and running!")
-
-print("✅ MADARA ZEN v3.1 LOADED SUCCESSFULLY!")
-print("✅ New RUN tab added - Execute multiple features at once!")
-print("✅ 1. Enable features in AUTO tab")
+print("✅ MADARA ZEN v4.0 LOADED SUCCESSFULLY!")
+print("✅ NEW FEATURES ADDED:")
+print("✅ - Speed Boost (🚀 in Auto tab)")
+print("✅ - Auto Clicker (🖱️ in Combat tab)")
+print("✅ - Infinite Stamina (⚡ in Combat tab)")
+print("✅ 1. Enable features in AUTO/COMBAT tabs")
 print("✅ 2. Go to RUN tab and press RUN ALL")
 print("✅ 3. Watch the magic happen!")
 print("✅ Script is ready to use - Choose your features and RUN!")
